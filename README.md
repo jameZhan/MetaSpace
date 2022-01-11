@@ -1,0 +1,2 @@
+# MetaSpace
+MetaSpace is a play-to-earn capital operation game powered by Tron blockchain, and integrates outer space geography into the game world. Players may invest in various assets such as space residual properties(NFTs), building materials, factories, mines, plus many more. Players can operate businesses whilst making new friends, establish wealthy and powerful consortiums and realize their ultimate financial fantasies.
