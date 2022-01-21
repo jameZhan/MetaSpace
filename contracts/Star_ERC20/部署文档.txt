@@ -1,0 +1,5 @@
+tron测试网STAR部署合约地址： 1,600,000 energy
+v1: TGmmn3gP7CcK6Votg9Uzk6Q67ZuBJddcWc
+
+tron主网STAR合约：
+v1: 

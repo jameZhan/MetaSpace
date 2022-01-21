@@ -1,0 +1,27 @@
+star: TGmmn3gP7CcK6Votg9Uzk6Q67ZuBJddcWc      1,600,000 energy
+houses（房产合约）: TQbq4GoLX4BL1yWieVCmJSu6oyaXHVtANn       3,236,210 energy
+PropertyTitle（质押凭证): TF777QFxuL5aAurS6GgJ1vds9EdGUWBznS     2,100,000 energy
+materials（材料合约）: TVQwU51x3eYYdmfVYu6YQJYsu98smgeZ7b      energy 2,537,853
+HouseFactory（建房合约）需要设置为houses的Minter: TZ7X3YfXMBpVodecUhdv5iC5Wfe4rQZFKw      energy 2,524,290
+# 取消了建房签名和skinId，建房也不需要建房许可、skin、保险点等
+
+加工厂合约, 需要设置为materials的Minter，需要设置star和material的合约地址:    #生产线从2到10
+    钻石加工厂: TYeYNxy3UbFFzyQpZPC7YY2eNYNmFFFhEV       1,796,707 energy
+    氢气加工厂: TMm39Fen1naAAXcS1cxjWRc3qiQ98f1vpk
+    镭矿加工厂: TJb9Z9Uz4CxKtdwGeMKFao9vKTwqLKvvvK
+
+采集场合约(tron测试startBlock: ) (需要设置为materials的Minter):
+    CrystalFarm(代币挖水晶): TJ7KAr9A5bQzzWJ66iEguwwdctMVD6ctsg       energy 1,331,994
+    GasFarm(代币挖瓦斯): TUN8GjzKvgFZGJ8RBMaaEMLLLXeYR8iC2A
+    GoldFarm(代币挖黄金): TTjg3yc4tWpsG47deR1riiDwjuYFwbV77V
+
+7个星系star矿池合约:   #每个周期往里打star 14天共22w个   #12小时 10分钟 15%share
+    1. 银河系(Milky Way): TYRBKNANTb2Bnyb4SMUYjLAD6uYxZrVyQc      energy 3,409,741
+    2. 卫星星系(Satellite Galaxy): TF6gdpxNr7vE7StRH8r6SmR4186Ki8HFUL
+    3. 仙女座星系(Andromeda): TNsWRmVTHTdFKq29Bxz5sWer6TUyJz1SAw
+    4. 雪茄星系(Cigar Galaxy): TFcxdE4Y9148neDo46ZV6n5QbMFHa8vUs9
+    5. 风车星系(Pinwheel Galaxy): TRfpNsdKPoD6dpRnCqQJyQmpY6swpH9mKY
+    6. 黑眼星系(Black Eye Galaxy): TZDMWpmpT4qwrdehrvUf5DZXW5Uj62qNdX
+    7. 波德星系(Bode Galaxy): TXuykn1GpmMGV132BBTaunwrbhPZeUmFtj
+
+诸神之战: TH1MxoCA6XRrkb4Z6PaNG18zGuBQU6LxQ1    #需要每个周期往里打star   # energy 2,242,953
