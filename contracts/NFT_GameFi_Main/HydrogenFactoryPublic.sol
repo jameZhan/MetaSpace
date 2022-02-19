@@ -8,11 +8,10 @@ import "./Ownable.sol";
 import "./Context.sol";
 import "./EnumerableMap.sol";
 import "./IMaterials.sol";
-import "../ReentrancyGuard.sol";
+import "./ReentrancyGuard.sol";
 
 
 // standard interface of IERC20 token
-// using this in this contract to receive Bino token by "transferFrom" method
 interface IERC20 {
     /**
      * @dev Returns the amount of tokens in existence.
@@ -153,7 +152,7 @@ library SafeERC20 {
 }
 
 
-contract GlassAdvancedFactory is Context, Ownable, ReentrancyGuard {
+contract HydrogenFactoryPublic is Context, Ownable, ReentrancyGuard {
     using SafeMath for uint256;
     using SafeERC20 for IERC20;
     using EnumerableMap for EnumerableMap.UintToAddressMap;
@@ -162,7 +161,7 @@ contract GlassAdvancedFactory is Context, Ownable, ReentrancyGuard {
         uint256 processLimit;
         uint256 baseSuccessRate;     // decimals: 1e4
         uint256 singleProcessPeriod; // uint: seconds
-        uint256 singleProcessPrice;  // in Bino's decimal, 1e18
+        uint256 singleProcessPrice;  // 1e18
         uint256 productionLineLimit;
         uint256 updateMaterialNeeded;
     }
@@ -176,7 +175,7 @@ contract GlassAdvancedFactory is Context, Ownable, ReentrancyGuard {
         uint256 stealTime;
     }
 
-    IERC20 public binoAddress;
+    IERC20 public starAddress;
     IMaterials public materialsAddress;
     // current wokers number, with the first value being 1. An id of 0 is invalid.
     uint256 public constant PROTECTION_PERIOD = 5 minutes;
@@ -184,7 +183,6 @@ contract GlassAdvancedFactory is Context, Ownable, ReentrancyGuard {
     uint256 public advanceMaterialId;
     // the current factory's level
     uint256 public currentLevel;
-    uint256 private _currentCollectedMaterial;
     // FactoryLevel => FactoryAttributes
     mapping(uint256 => FactoryAttributes) private _currentAttributes;
     // key : value = lineId : currentUserAddress
@@ -196,28 +194,24 @@ contract GlassAdvancedFactory is Context, Ownable, ReentrancyGuard {
     // lineId => LineDetail
     mapping(uint256 => LineDetail) private _lineDetail;
 
-    event LevelUp(uint256 indexed level);
     event StartProcess(uint256 indexed lineId, address indexed account, uint256 indexed completeTime, uint256 amount);
     event ClaimUpgratedMaterial(uint256 indexed lineId, address indexed account, uint256 indexed amount);
     
 
     constructor () public {
         // fill in those deployed contract addresses
-        setBinoAddress(0xf8Ca318db090124E1468CC6c77f69Fd7eb78685a);
-        setMaterialsAddress(0x04898c211e112e558def9f28B22640Ef814f56e6);
-        // set the material Id for "glass", which is 4
-        basicMaterialId = 4;
-        // set the material Id for "glassAdvanced", which is 9
-        advanceMaterialId = 9;
-        // set the initial level, which is level 1
-        currentLevel = 1;
+        setStarAddress(0x1C78C9Aa8B21589702A5fA6A2C8ad875f6c7d8D3);
+        setMaterialsAddress(0xeD9825D3f6501D0C5379e0b3edE36D24f057A527);
+        basicMaterialId = 2;
+        advanceMaterialId = 7;
+        currentLevel = 3;
         // set the FactoryAttributes for each level;
         _setFactoryAttributes();
         
     }
 
-    function setBinoAddress(address newAddress) public onlyOwner {
-        binoAddress = IERC20(newAddress);
+    function setStarAddress(address newAddress) public onlyOwner {
+        starAddress = IERC20(newAddress);
     }
 
     function setMaterialsAddress(address newAddress) public onlyOwner {
@@ -229,9 +223,9 @@ contract GlassAdvancedFactory is Context, Ownable, ReentrancyGuard {
         _currentAttributes[level].productionLineLimit = newLineLimit;
     }
 
-    function withdrawBino(address account, uint256 amount) public onlyOwner {
-        require(amount <= binoAddress.balanceOf(address(this)), "withdraw amount > bino balance in this contract");
-        binoAddress.safeTransfer(account, amount);
+    function withdrawStar(address account, uint256 amount) public onlyOwner {
+        require(amount <= starAddress.balanceOf(address(this)), "withdraw amount > star balance in this contract");
+        starAddress.safeTransfer(account, amount);
     }
 
     function checkCurrentFactoryAttributes(uint256 level) public view returns (FactoryAttributes memory) {
@@ -259,39 +253,6 @@ contract GlassAdvancedFactory is Context, Ownable, ReentrancyGuard {
         return _lineDetail[lineId];
     }
 
-    function checkCurrentCollectedMaterial() public view returns (uint256) {
-        return _currentCollectedMaterial;
-    }
-
-    function checkMaterialNeededToUpgrate() public view returns (uint256) {
-        if (currentLevel == 6) return 0;
-
-        // read material needed for current level
-        FactoryAttributes storage thisLevelAttributes = _currentAttributes[currentLevel];
-        uint256 materialNeeded = thisLevelAttributes.updateMaterialNeeded;
-
-        return materialNeeded.sub(_currentCollectedMaterial);
-    }
-
-    // call "setApproveForAll" method to set this contract as the operator of the _msgSender()
-    // BEFORE calling this method
-    function levelUp(uint256 amount) public {
-        require(currentLevel < 6, "current factory level can not exceed 6");
-        
-        // read material needed for current level
-        FactoryAttributes storage thisLevelAttributes = _currentAttributes[currentLevel];
-        uint256 materialNeeded = thisLevelAttributes.updateMaterialNeeded;
-        // burn injected materials, and upgrate collected amount
-        materialsAddress.burn(_msgSender(), basicMaterialId, amount);
-        _currentCollectedMaterial = _currentCollectedMaterial.add(amount);
-
-        if (_currentCollectedMaterial >= materialNeeded) {
-                _currentCollectedMaterial = 0;
-                currentLevel = currentLevel.add(1);
-
-                emit LevelUp(currentLevel);
-            }
-    }
 
     // 1. call "approve" method to set this contract as the operator of the _msgSender()
     // BEFORE call this method
@@ -323,9 +284,9 @@ contract GlassAdvancedFactory is Context, Ownable, ReentrancyGuard {
             stealTime: stealTime
         });
 
-        // pay Bino fee, and burn basic materials to start upgrating
-        uint256 totalBinoFee = amount.mul(thisLevelAttributes.singleProcessPrice);  // in Bino's decimals: 1e18
-        binoAddress.safeTransferFrom(_msgSender(), address(this), totalBinoFee);
+        // pay Star fee, and burn basic materials to start upgrating
+        uint256 totalStarFee = amount.mul(thisLevelAttributes.singleProcessPrice);  // 1e18
+        starAddress.safeTransferFrom(_msgSender(), address(this), totalStarFee);
         materialsAddress.burn(_msgSender(), basicMaterialId, amount);
 
         emit StartProcess(lineId, _msgSender(), finishTime, amount);
@@ -382,58 +343,16 @@ contract GlassAdvancedFactory is Context, Ownable, ReentrancyGuard {
     }
 
     function _setFactoryAttributes() private {
-        _currentAttributes[1] = FactoryAttributes({
-                                                    processLimit: 7200,
-                                                    baseSuccessRate: 1600,
-                                                    singleProcessPeriod: 16 seconds,
-                                                    singleProcessPrice: 367 * 1e12,
-                                                    productionLineLimit: 1,
-                                                    updateMaterialNeeded: 60000
-                                                });
-
-        _currentAttributes[2] = FactoryAttributes({
-                                                    processLimit: 8100,
-                                                    baseSuccessRate: 1900,
-                                                    singleProcessPeriod: 12 seconds,
-                                                    singleProcessPrice: 350 * 1e12,
-                                                    productionLineLimit: 1,
-                                                    updateMaterialNeeded: 300000
-                                                });
         _currentAttributes[3] = FactoryAttributes({
-                                                    processLimit: 9000,
-                                                    baseSuccessRate: 2000,
-                                                    singleProcessPeriod: 8 seconds,
-                                                    singleProcessPrice: 330 * 1e12,
-                                                    productionLineLimit: 2,
-                                                    updateMaterialNeeded: 600000
-                                                });
-        _currentAttributes[4] = FactoryAttributes({
-                                                    processLimit: 9900,
-                                                    baseSuccessRate: 2200,
-                                                    singleProcessPeriod: 7 seconds,
-                                                    singleProcessPrice: 317 * 1e12,
-                                                    productionLineLimit: 2,
-                                                    updateMaterialNeeded: 3000000
-                                                });
-        _currentAttributes[5] = FactoryAttributes({
-                                                    processLimit: 10800,
-                                                    baseSuccessRate: 2400,
-                                                    singleProcessPeriod: 6 seconds,
-                                                    singleProcessPrice: 300 * 1e12,
-                                                    productionLineLimit: 3,
-                                                    updateMaterialNeeded: 30000000
-                                                });
-        _currentAttributes[6] = FactoryAttributes({
-                                                    processLimit: 13500,
+                                                    processLimit: 7200,
                                                     baseSuccessRate: 3000,
-                                                    singleProcessPeriod: 4 seconds,
-                                                    singleProcessPrice: 167 * 1e12,
-                                                    productionLineLimit: 3,
-                                                    updateMaterialNeeded: 0  // can not upgrate anymore
+                                                    singleProcessPeriod: 7 seconds,
+                                                    singleProcessPrice: 280 * 1e12,
+                                                    productionLineLimit: 10,
+                                                    updateMaterialNeeded: 0
                                                 });
     }
 
-    // generate a random integer between 0.9*base to 1.1*base (upperBound can not exceed 10000)
     function _getRandomSuccessRate(uint256 base) private view returns (uint256) {
         // +/- 10%
         uint256 halfRange = base.div(10);

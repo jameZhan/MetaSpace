@@ -78,11 +78,11 @@ contract StarFarm is Context, Ownable, RewardsDistributionRecipient, ReentrancyG
     /* ========== CONSTRUCTOR ========== */
 
     constructor() public {
-        rewardsToken = IERC20(0x4a9f3FA9c4308a45B4109A640A44dfbC4608Bd04);
-        stakingProof = IStakingProof(0x38570A1314d201cDC0b57b0996436FA2424264E6);
-        housesERC721 = IERC721(0xa07ed548eE4E92e5e71eC402B9aB0514fd97A69C);
-        housesNFT = IMetaSpace(0xa07ed548eE4E92e5e71eC402B9aB0514fd97A69C);
-        materials = IMaterials(0xD5483cCe65d2059c47Fbd8f7E07342942Fb7F82A);
+        rewardsToken = IERC20(0x1C78C9Aa8B21589702A5fA6A2C8ad875f6c7d8D3);
+        stakingProof = IStakingProof(0x1641B16a28375b63A12722C07E0707203B1F5ADb);
+        housesERC721 = IERC721(0x99eC71BD759eA433d2408a138B80053C111cb283);
+        housesNFT = IMetaSpace(0x99eC71BD759eA433d2408a138B80053C111cb283);
+        materials = IMaterials(0xeD9825D3f6501D0C5379e0b3edE36D24f057A527);
         // set the initial distributor as the contract deployer
         rewardsDistribution = _msgSender();
 

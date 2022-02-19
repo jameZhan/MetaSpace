@@ -8,11 +8,10 @@ import "./Ownable.sol";
 import "./Context.sol";
 import "./EnumerableMap.sol";
 import "./IMaterials.sol";
-import "../ReentrancyGuard.sol";
+import "./ReentrancyGuard.sol";
 
 
 // standard interface of IERC20 token
-// using this in this contract to receive Bino token by "transferFrom" method
 interface IERC20 {
     /**
      * @dev Returns the amount of tokens in existence.
@@ -153,7 +152,7 @@ library SafeERC20 {
 }
 
 
-contract SteelFactoryPublic is Context, Ownable, ReentrancyGuard {
+contract RadiumFactoryPublic is Context, Ownable, ReentrancyGuard {
     using SafeMath for uint256;
     using SafeERC20 for IERC20;
     using EnumerableMap for EnumerableMap.UintToAddressMap;
@@ -162,7 +161,7 @@ contract SteelFactoryPublic is Context, Ownable, ReentrancyGuard {
         uint256 processLimit;
         uint256 baseSuccessRate;     // decimals: 1e4
         uint256 singleProcessPeriod; // uint: seconds
-        uint256 singleProcessPrice;  // in Bino's decimal, 1e18
+        uint256 singleProcessPrice;  // 1e18
         uint256 productionLineLimit;
         uint256 updateMaterialNeeded;
     }
@@ -176,7 +175,7 @@ contract SteelFactoryPublic is Context, Ownable, ReentrancyGuard {
         uint256 stealTime;
     }
 
-    IERC20 public binoAddress;
+    IERC20 public starAddress;
     IMaterials public materialsAddress;
     // current wokers number, with the first value being 1. An id of 0 is invalid.
     uint256 public constant PROTECTION_PERIOD = 5 minutes;
@@ -201,21 +200,18 @@ contract SteelFactoryPublic is Context, Ownable, ReentrancyGuard {
 
     constructor () public {
         // fill in those deployed contract addresses
-        setBinoAddress(0xedd9Ae85a5474bBeFFb7Cb7430Bc318A79524fD7);
-        setMaterialsAddress(0xB4De27B5e879E6ED343e03290a9e9183d2AA41E8);
-        // set the material Id for "iron", which is 5
-        basicMaterialId = 5;
-        // set the material Id for "steel", which is 10
-        advanceMaterialId = 10;
-        // set the initial level, which is level 1
+        setStarAddress(0x1C78C9Aa8B21589702A5fA6A2C8ad875f6c7d8D3);
+        setMaterialsAddress(0xeD9825D3f6501D0C5379e0b3edE36D24f057A527);
+        basicMaterialId = 3;
+        advanceMaterialId = 8;
         currentLevel = 3;
         // set the FactoryAttributes for each level;
         _setFactoryAttributes();
         
     }
 
-    function setBinoAddress(address newAddress) public onlyOwner {
-        binoAddress = IERC20(newAddress);
+    function setStarAddress(address newAddress) public onlyOwner {
+        starAddress = IERC20(newAddress);
     }
 
     function setMaterialsAddress(address newAddress) public onlyOwner {
@@ -227,9 +223,9 @@ contract SteelFactoryPublic is Context, Ownable, ReentrancyGuard {
         _currentAttributes[level].productionLineLimit = newLineLimit;
     }
 
-    function withdrawBino(address account, uint256 amount) public onlyOwner {
-        require(amount <= binoAddress.balanceOf(address(this)), "withdraw amount > bino balance in this contract");
-        binoAddress.safeTransfer(account, amount);
+    function withdrawStar(address account, uint256 amount) public onlyOwner {
+        require(amount <= starAddress.balanceOf(address(this)), "withdraw amount > star balance in this contract");
+        starAddress.safeTransfer(account, amount);
     }
 
     function checkCurrentFactoryAttributes(uint256 level) public view returns (FactoryAttributes memory) {
@@ -256,6 +252,7 @@ contract SteelFactoryPublic is Context, Ownable, ReentrancyGuard {
     function checkLineDetail(uint256 lineId) public view returns (LineDetail memory) {
         return _lineDetail[lineId];
     }
+
 
     // 1. call "approve" method to set this contract as the operator of the _msgSender()
     // BEFORE call this method
@@ -287,9 +284,9 @@ contract SteelFactoryPublic is Context, Ownable, ReentrancyGuard {
             stealTime: stealTime
         });
 
-        // pay Bino fee, and burn basic materials to start upgrating
-        uint256 totalBinoFee = amount.mul(thisLevelAttributes.singleProcessPrice);  // in Bino's decimals: 1e18
-        binoAddress.safeTransferFrom(_msgSender(), address(this), totalBinoFee);
+        // pay Star fee, and burn basic materials to start upgrating
+        uint256 totalStarFee = amount.mul(thisLevelAttributes.singleProcessPrice);  // 1e18
+        starAddress.safeTransferFrom(_msgSender(), address(this), totalStarFee);
         materialsAddress.burn(_msgSender(), basicMaterialId, amount);
 
         emit StartProcess(lineId, _msgSender(), finishTime, amount);
@@ -351,7 +348,7 @@ contract SteelFactoryPublic is Context, Ownable, ReentrancyGuard {
                                                     baseSuccessRate: 2000,
                                                     singleProcessPeriod: 7 seconds,
                                                     singleProcessPrice: 300 * 1e12,
-                                                    productionLineLimit: 2,
+                                                    productionLineLimit: 10,
                                                     updateMaterialNeeded: 0
                                                 });
     }

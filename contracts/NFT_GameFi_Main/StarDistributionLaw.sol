@@ -50,8 +50,8 @@ contract StarDistrbutionLaw is Context, Ownable, ReentrancyGuard{
 
 
     constructor () public {
-        rewardsToken = IERC20(0x4a9f3FA9c4308a45B4109A640A44dfbC4608Bd04);
-        materials = IMaterials(0xD5483cCe65d2059c47Fbd8f7E07342942Fb7F82A);
+        rewardsToken = IERC20(0x1C78C9Aa8B21589702A5fA6A2C8ad875f6c7d8D3);
+        materials = IMaterials(0xeD9825D3f6501D0C5379e0b3edE36D24f057A527);
 
         _setMaterialPoints();
         isBurnTime = false;

@@ -1,12 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.6.12;
 
-import "../Materials_ERC1155/SafeMath.sol";
-import "../Materials_ERC1155/Address.sol";
-import "../Materials_ERC1155/Ownable.sol";
-import "../Materials_ERC1155/IMaterials.sol";
-import "./ICakeManual.sol";
-import "../ReentrancyGuard.sol";
+import "./SafeMath.sol";
+import "./Address.sol";
+import "./Ownable.sol";
+import "./IMaterials.sol";
+import "./ReentrancyGuard.sol";
 
 // standard interface of IERC20 token
 // using this in this contract to receive LP tokens or transfer
@@ -149,7 +148,7 @@ library SafeERC20 {
     }
 }
 
-contract ClayFarm is Ownable, ReentrancyGuard {
+contract CrystalFarm is Ownable, ReentrancyGuard {
     using SafeMath for uint256;
     using SafeERC20 for IERC20;
 
@@ -176,22 +175,12 @@ contract ClayFarm is Ownable, ReentrancyGuard {
         uint256 lastRewardBlock; // Last block number that Materials distribution occurs.
         uint256 accMaterialPerShare; // Accumulated Materials per share, times 1e30. See below.
     }
-    // main net:
-    address private _materials = 0xeDEe132Fcf90FE3157C389706b30c6A1c7A6C88D;
-    // main net: 0x0E09FaBB73Bd3Ade0a17ECC321fD13a19e81cE82
-    address private _cakeToken = 0x0E09FaBB73Bd3Ade0a17ECC321fD13a19e81cE82;
-    // main net: 0x73feaa1eE314F8c655E354234017bE2193C9E24E
-    address private _cakeFarm = 0x73feaa1eE314F8c655E354234017bE2193C9E24E;
+    // main net: 0xeD9825D3f6501D0C5379e0b3edE36D24f057A527
+    address private _materials = 0xeD9825D3f6501D0C5379e0b3edE36D24f057A527;
     // Material (ERC1155) contract address
     IMaterials public materials;
-    // This contract is ClayFarm, and the clay's tokenId = 1
+    // This contract is CrystalFarm, and the crystal's tokenId = 1
     uint256 public materialId = 1;
-    // CAKE Token contract on BSC mainnet
-    IERC20 public cakeToken;
-    // Syrup Main Staking contract address on BSC mainnet:
-    ICakeManual public cakeFarm;
-    // record the pid==0 cake balance
-    uint256 public cakePoolBalance = 0;
     // Dev address.
     address public devaddr;
     // MATERIAL tokens created per block.
@@ -215,8 +204,6 @@ contract ClayFarm is Ownable, ReentrancyGuard {
         startBlock = _startBlock;
         
         materials = IMaterials(_materials);
-        cakeToken = IERC20(_cakeToken);
-        cakeFarm = ICakeManual(_cakeFarm);
     }
 
     function poolLength() external view returns (uint256) {
@@ -278,9 +265,7 @@ contract ClayFarm is Ownable, ReentrancyGuard {
         UserInfo storage user = userInfo[_pid][_user];
         uint256 accMaterialPerShare = pool.accMaterialPerShare;
         uint256 lpSupply = pool.lpToken.balanceOf(address(this));
-        if (_pid == 0) {
-            lpSupply = cakePoolBalance;
-        }
+
         if (block.number > pool.lastRewardBlock && lpSupply != 0) {
             uint256 materialReward =(block.number.sub(pool.lastRewardBlock))
                     .mul(materialPerBlock).mul(pool.allocPoint).div(
@@ -308,9 +293,6 @@ contract ClayFarm is Ownable, ReentrancyGuard {
             return;
         }
         uint256 lpSupply = pool.lpToken.balanceOf(address(this));
-        if (_pid == 0) {
-            lpSupply = cakePoolBalance;
-        }
         if (lpSupply == 0) {
             pool.lastRewardBlock = block.number;
             return;
@@ -326,10 +308,8 @@ contract ClayFarm is Ownable, ReentrancyGuard {
         pool.lastRewardBlock = block.number;
     }
 
-    // Deposit tokens (not CAKE) to ClayFarm for CLAY allocation.
     // this contract must be assigned as MinterRole for the Material contract
     function deposit(uint256 _pid, uint256 _amount) public nonReentrant {
-        require(_pid != 0, "can not stake CAKE in this pool");
 
         PoolInfo storage pool = poolInfo[_pid];
         UserInfo storage user = userInfo[_pid][msg.sender];
@@ -354,10 +334,8 @@ contract ClayFarm is Ownable, ReentrancyGuard {
         emit Deposit(msg.sender, _pid, _amount);
     }
 
-    // Withdraw tokens (not CAKE) and Harvest material from ClayFarm for CLAY allocation.
     // this contract must be assigned as MinterRole for the Material contract
     function withdraw(uint256 _pid, uint256 _amount) public nonReentrant {
-        require(_pid != 0, "can not withdraw CAKE in this pool");
 
         PoolInfo storage pool = poolInfo[_pid];
         UserInfo storage user = userInfo[_pid][msg.sender];
@@ -377,68 +355,6 @@ contract ClayFarm is Ownable, ReentrancyGuard {
 
         user.rewardDebt = user.amount.mul(pool.accMaterialPerShare).div(1e30);
         emit Withdraw(msg.sender, _pid, _amount);
-    }
-
-    // Deposit CAKE to ClayFarm for CLAY allocation.
-    // this contract must be assigned as MinterRole for the Material contract
-    function depositCAKE(uint256 _amount) public nonReentrant {
-        PoolInfo storage pool = poolInfo[0];
-        UserInfo storage user = userInfo[0][msg.sender];
-        updatePool(0);
-        if (user.amount > 0) {
-            uint256 pending =
-                user.amount.mul(pool.accMaterialPerShare).div(1e30).sub(
-                    user.rewardDebt
-                );
-            if (pending > 0) {
-                materials.mint(msg.sender, materialId, pending, "materialId minted!");
-            }
-        }
-        if (_amount > 0) {
-            // pool.lpToken == cakeToken
-            pool.lpToken.safeTransferFrom(address(msg.sender), address(this), _amount);
-            cakePoolBalance = cakePoolBalance.add(_amount);
-            cakeToken.safeIncreaseAllowance(_cakeFarm, _amount);
-            cakeFarm.enterStaking(_amount);
-
-            user.amount = user.amount.add(_amount);
-        }
-
-        user.rewardDebt = user.amount.mul(pool.accMaterialPerShare).div(1e30);
-        emit Deposit(msg.sender, 0, _amount);
-    }
-
-    // Withdraw CAKE and Harvest material from ClayFarm for CLAY allocation.
-    // this contract must be assigned as MinterRole for the Material contract
-    function withdrawCAKE(uint256 _amount) public nonReentrant {
-        PoolInfo storage pool = poolInfo[0];
-        UserInfo storage user = userInfo[0][msg.sender];
-        require(user.amount >= _amount, "withdraw: not good");
-        updatePool(0);
-        uint256 pending =
-            user.amount.mul(pool.accMaterialPerShare).div(1e30).sub(
-                user.rewardDebt
-            );
-        if (pending > 0) {
-            materials.mint(msg.sender, materialId, pending, "materialId minted");
-        }
-        if (_amount > 0) {
-            user.amount = user.amount.sub(_amount);
-            // pool.lpToken == cakeToken
-            cakeFarm.leaveStaking(_amount);
-            pool.lpToken.safeTransfer(address(msg.sender), _amount);
-            cakePoolBalance = cakePoolBalance.sub(_amount);
-        }
-
-        user.rewardDebt = user.amount.mul(pool.accMaterialPerShare).div(1e30);
-        emit Withdraw(msg.sender, 0, _amount);
-    }
-
-    function withdrawBonus(uint256 _amount) public onlyOwner {
-        uint256 cakeBal = cakeToken.balanceOf(address(this));
-        require(_amount <= cakeBal && _amount > 0, "withdraw bonus exceeds contract's balance");
-
-        cakeToken.safeTransfer(devaddr, _amount);
     }
 
     // Update dev address by the previous dev.

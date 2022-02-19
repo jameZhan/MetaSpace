@@ -276,8 +276,8 @@ contract MetaSpaceFactory is Ownable, ReentrancyGuard {
 
     constructor () public {
         // fill in those deployed contract addresses
-        setHousesAddress(0xa07ed548eE4E92e5e71eC402B9aB0514fd97A69C);
-        setMaterialsAddress(0xD5483cCe65d2059c47Fbd8f7E07342942Fb7F82A);
+        setHousesAddress(0x99eC71BD759eA433d2408a138B80053C111cb283);
+        setMaterialsAddress(0xeD9825D3f6501D0C5379e0b3edE36D24f057A527);
         // set building period for each level's house
         _setHouseBuildingPeriod();
         // set house's Ids array for each level

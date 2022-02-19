@@ -38,7 +38,7 @@ contract StarToken is Context, Ownable, MinterRole, Pausable, ERC20 {
      */
     event Snapshot(uint256 id);
 
-    constructor() ERC20("Star Token", "STAR") public {
+    constructor() ERC20("MetaSpace Star Token", "STAR") public {
         _cap = 2000000000000000000000000000; // 2 billions maximum
 
     }
