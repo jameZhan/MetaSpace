@@ -1,4 +1,0 @@
-tron测试网部署合约地址： energy 2,537,853
-材料合约v1: TVQwU51x3eYYdmfVYu6YQJYsu98smgeZ7b
-
-CrystalFarm: TJ7KAr9A5bQzzWJ66iEguwwdctMVD6ctsg	 energy 1,331,994

@@ -330,6 +330,26 @@ contract MetaSpaceFactory is Ownable, ReentrancyGuard {
         return _buildIdToClaimInfo[buildId];
     }
 
+    function checkHouseIsClaimed(uint256 buildId) public view returns (bool) {
+        require(_isBuildIdExists[buildId], "this build id does not exist");
+        return _buildIdToClaimInfo[buildId].isClaimed;
+    }
+
+    function checkHouseOwner(uint256 buildId) public view returns (address) {
+        require(_isBuildIdExists[buildId], "this build id does not exist");
+        return _buildIdToClaimInfo[buildId].owner;
+    }
+
+    function checkHouseLevel(uint256 buildId) public view returns (uint256) {
+        require(_isBuildIdExists[buildId], "this build id does not exist");
+        return _buildIdToClaimInfo[buildId].level;
+    }
+
+    function checkHouseFinishedTime(uint256 buildId) public view returns (uint256) {
+        require(_isBuildIdExists[buildId], "this build id does not exist");
+        return _buildIdToClaimInfo[buildId].finishedTime;
+    }
+
     function isReadyToClaim(uint256 buildId) public view returns (bool) {
         require(_isBuildIdExists[buildId], "this build id does not exist");
         claimInfo storage thisClaim = _buildIdToClaimInfo[buildId];
