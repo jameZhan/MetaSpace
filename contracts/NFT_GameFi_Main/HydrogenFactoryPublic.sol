@@ -253,6 +253,18 @@ contract HydrogenFactoryPublic is Context, Ownable, ReentrancyGuard {
         return _lineDetail[lineId];
     }
 
+    function checkLineUser(uint256 lineId) public view returns (address) {
+        return _lineDetail[lineId].lineUser;
+    }
+
+    function checkLineAmount(uint256 lineId) public view returns (uint256) {
+        return _lineDetail[lineId].amount;
+    }
+
+    function checkLineFinishTime(uint256 lineId) public view returns (uint256) {
+        return _lineDetail[lineId].finishTime;
+    }
+
 
     // 1. call "approve" method to set this contract as the operator of the _msgSender()
     // BEFORE call this method

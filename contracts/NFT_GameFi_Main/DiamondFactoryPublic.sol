@@ -202,6 +202,8 @@ contract DiamondFactoryPublic is Context, Ownable, ReentrancyGuard {
         // fill in those deployed contract addresses
         setStarAddress(0x1C78C9Aa8B21589702A5fA6A2C8ad875f6c7d8D3);
         setMaterialsAddress(0xeD9825D3f6501D0C5379e0b3edE36D24f057A527);
+        setStarAddress(0x4a9f3FA9c4308a45B4109A640A44dfbC4608Bd04);
+        setMaterialsAddress(0xD5483cCe65d2059c47Fbd8f7E07342942Fb7F82A);
         basicMaterialId = 1;
         advanceMaterialId = 6;
         // set the initial level, which is level 1
@@ -252,6 +254,18 @@ contract DiamondFactoryPublic is Context, Ownable, ReentrancyGuard {
 
     function checkLineDetail(uint256 lineId) public view returns (LineDetail memory) {
         return _lineDetail[lineId];
+    }
+
+    function checkLineUser(uint256 lineId) public view returns (address) {
+        return _lineDetail[lineId].lineUser;
+    }
+
+    function checkLineAmount(uint256 lineId) public view returns (uint256) {
+        return _lineDetail[lineId].amount;
+    }
+
+    function checkLineFinishTime(uint256 lineId) public view returns (uint256) {
+        return _lineDetail[lineId].finishTime;
     }
 
 
